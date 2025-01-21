@@ -1,3 +1,4 @@
+import type { VertexAI } from '@google-cloud/vertexai';
 import {
   Content,
   FunctionCallPart,
@@ -8,6 +9,7 @@ import {
   SchemaType,
 } from '@google/generative-ai';
 
+import { VertexAIStream } from '@/libs/agent-runtime/utils/streams/vertex-ai';
 import { imageUrlToBase64 } from '@/utils/imageToBase64';
 import { safeParseJSON } from '@/utils/safeParseJSON';
 
@@ -46,15 +48,24 @@ function getThreshold(model: string): HarmBlockThreshold {
   return HarmBlockThreshold.BLOCK_NONE;
 }
 
+interface LobeGoogleAIParams {
+  apiKey?: string;
+  baseURL?: string;
+  client?: GoogleGenerativeAI | VertexAI;
+  isVertexAi?: boolean;
+}
+
 export class LobeGoogleAI implements LobeRuntimeAI {
   private client: GoogleGenerativeAI;
+  private isVertexAi: boolean;
   baseURL?: string;
 
-  constructor({ apiKey, baseURL }: { apiKey?: string; baseURL?: string } = {}) {
+  constructor({ apiKey, baseURL, client, isVertexAi }: LobeGoogleAIParams = {}) {
     if (!apiKey) throw AgentRuntimeError.createError(AgentRuntimeErrorType.InvalidProviderAPIKey);
 
-    this.client = new GoogleGenerativeAI(apiKey);
-    this.baseURL = baseURL;
+    this.client = client ? (client as GoogleGenerativeAI) : new GoogleGenerativeAI(apiKey);
+    this.baseURL = client ? undefined : baseURL;
+    this.isVertexAi = isVertexAi || false;
   }
 
   async chat(rawPayload: ChatStreamPayload, options?: ChatCompetitionOptions) {
@@ -105,18 +116,24 @@ export class LobeGoogleAI implements LobeRuntimeAI {
       const googleStream = convertIterableToStream(geminiStreamResult.stream);
       const [prod, useForDebug] = googleStream.tee();
 
-      if (process.env.DEBUG_GOOGLE_CHAT_COMPLETION === '1') {
+      const key = this.isVertexAi
+        ? 'DEBUG_VERTEX_AI_CHAT_COMPLETION'
+        : 'DEBUG_GOOGLE_CHAT_COMPLETION';
+
+      if (process.env[key] === '1') {
         debugStream(useForDebug).catch();
       }
 
       // Convert the response into a friendly text-stream
-      const stream = GoogleGenerativeAIStream(prod, options?.callback);
+      const Stream = this.isVertexAi ? VertexAIStream : GoogleGenerativeAIStream;
+      const stream = Stream(prod, options?.callback);
 
       // Respond with the stream
       return StreamingResponse(stream, { headers: options?.headers });
     } catch (e) {
       const err = e as Error;
 
+      console.log(err);
       const { errorType, error } = this.parseErrorMessage(err.message);
 
       throw AgentRuntimeError.chat({ error, errorType, provider: ModelProvider.Google });

@@ -305,6 +305,9 @@
   "abab6.5t-chat": {
     "description": "Çin karakter diyalog senaryoları için optimize edilmiş, akıcı ve Çin ifade alışkanlıklarına uygun diyalog üretim yeteneği sunar."
   },
+  "abab7-chat-preview": {
+    "description": "abab6.5 serisi modellere göre uzun metin, matematik ve yazım gibi yeteneklerde büyük bir gelişme sağlanmıştır."
+  },
   "accounts/fireworks/models/firefunction-v1": {
     "description": "Fireworks açık kaynak fonksiyon çağrı modeli, mükemmel talimat yürütme yetenekleri ve özelleştirilebilir özellikler sunar."
   },

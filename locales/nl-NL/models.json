@@ -305,6 +305,9 @@
   "abab6.5t-chat": {
     "description": "Geoptimaliseerd voor Chinese personagegesprekken, biedt vloeiende en cultureel passende gespreksgeneratiecapaciteiten."
   },
+  "abab7-chat-preview": {
+    "description": "In vergelijking met de abab6.5-serie modellen zijn er aanzienlijke verbeteringen in de vaardigheden op het gebied van lange teksten, wiskunde en schrijven."
+  },
   "accounts/fireworks/models/firefunction-v1": {
     "description": "Fireworks open-source functie-aanroepmodel biedt uitstekende instructie-uitvoeringscapaciteiten en aanpasbare functies."
   },
